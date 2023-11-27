@@ -1,0 +1,53 @@
+server:
+  port: 8080
+  http2:
+    enabled: true
+  servlet:
+    context-path: /genesys/v1
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        web: DEBUG
+        security: DEBUG
+spring:
+  application:
+    name: Sensor API
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+    serialization:
+      write-dates-as-timestamps: false
+  jpa:
+    hibernate:
+      ddl-auto: none #validate
+    show-sql: true
+    generate-ddl: false
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+  security:
+    user:
+      name: jeff
+      password: jeff
+  datasource:
+    url: jdbc:mariadb://127.0.0.1:3306/genesys_interview
+    username: genesys
+    password: password
+    driver-class-name: org.mariadb.jdbc.Driver
+    generate-unique-name: false
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+    version: openapi_3_1
+    resolve-schema-properties: true
+  model-and-view-allowed: true
+  swagger-ui:
+    enabled: true
+    show-common-extensions: true
+    syntax-highlight:
+      activated: true
+    try-it-out-enabled: true

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JpaBuddyIdeaProjectConfig" ddlActionDbType="maria" migrateIndexesAndConstraints="true" reUseTableSchema="true" newRepositoryParent="org.springframework.data.repository.ListCrudRepository">
+    <option name="defaultUnitInitialized" value="true" />
+    <option name="renamerInitialized" value="true" />
+    <option name="reverseEngineeringLastDbConnectionId" value="0bc342ee-c40a-41b1-9267-f8f4fc78ccf0" />
+    <option name="reLastEntityCreationPackage" value="src/main/java/com/interview/entity" />
+  </component>
+</project>

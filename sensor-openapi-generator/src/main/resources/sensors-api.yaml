@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: Sensor API
+  version: 1.0.0
+  description: API for managing sensor data
+
+servers:
+  - url: http://localhost:${port}/${base_path}/${api_version}
+    variables:
+      port:
+        enum:
+          - '8080'
+          - '8443'
+        default: '8080'
+      base_path:
+        enum:
+          - 'genesys'
+        default: 'genesys'
+      api_version:
+        enum:
+          - 'v1'
+        default: 'v1'
+
+paths:
+  /sensors:
+    get:
+      tags:
+        - Sensor
+      summary: Query all sensors
+      description: Query the information about the actual sensors.
+      operationId: querySensors
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: ID of the sensor
+          schema:
+            type: integer
+            format: int64
+        - name: name
+          in: query
+          description: The name of the Weather Sensor
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of sensors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sensor'
+        '400':
+          description: Bad request
+    post:
+      tags:
+        - Sensor
+      summary: Add a new sensor
+      operationId: addSensor
+      requestBody:
+        description: Sensor details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sensor'
+            example:
+              name: ACME Weather Sensor
+      responses:
+        '201':
+          description: The created Sensor object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sensor'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+        '400':
+          description: Bad request
+
+  /sensors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the sensor
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      tags:
+        - Sensor
+      summary: Get sensor details
+      operationId: getSensor
+      responses:
+        '200':
+          description: Sensor details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sensor'
+        '400':
+          description: Bad Request
+        '404':
+          description: Sensor not found
+
+  /sensors/{id}/weather-metrics:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the sensor
+        schema:
+          type: integer
+          format: int64
+    post:
+      tags:
+        - WeatherMetric
+      summary: Add metrics from the sensor.
+      description: The sensor data is added to the application.
+      operationId: importWeatherMetricsBySensorId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeatherMetric'
+      responses:
+        201:
+          description: Successful creation of an event from a 'Sensor'
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/WeatherMetric'
+        '400':
+          description: Bad Request
+        '404':
+          description: Sensor not found
+
+    get:
+      tags:
+        - WeatherMetric
+      summary: Query the metrics previously persisted from the specified sensor.
+      description: A list of sensor weather metrics.
+      operationId: queryWeatherMetricsBySensorId
+      parameters:
+        - $ref: '#/components/parameters/q_temperature'
+        - $ref: '#/components/parameters/q_humidity'
+        - $ref: '#/components/parameters/q_wind_speed'
+        - $ref: '#/components/parameters/q_wind_direction'
+        - $ref: '#/components/parameters/q_cloud_cover'
+        - $ref: '#/components/parameters/q_timestamp'
+        - $ref: '#/components/parameters/q_start'
+        - $ref: '#/components/parameters/q_end'
+      responses:
+        200:
+          description: The list of sensor weather metric records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref:  '#/components/schemas/WeatherMetric'
+        '400':
+          description: Bad Request
+        '404':
+          description: Sensor not found
+
+  /sensors/{id}/weather-statistics:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the sensor
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags:
+        - WeatherStatistic
+      summary: Query the weather metrics previously persisted from the specified sensor
+      description: An object that represents the requested statistic type for the data requested.
+      operationId: queryWeatherStatisticBySensorId
+      parameters:
+        - $ref: '#/components/parameters/q_statistic_type'
+        - $ref: '#/components/parameters/q_temperature'
+        - $ref: '#/components/parameters/q_humidity'
+        - $ref: '#/components/parameters/q_wind_speed'
+        - $ref: '#/components/parameters/q_wind_direction'
+        - $ref: '#/components/parameters/q_cloud_cover'
+        - $ref: '#/components/parameters/q_start'
+        - $ref: '#/components/parameters/q_end'
+      responses:
+        200:
+          description: The requested statistics
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/WeatherStatistic'
+        '400':
+          description: Bad Request
+        '404':
+          description: Sensor not found
+
+  /weather-metrics:
+    get:
+      tags:
+        - WeatherMetric
+      summary: Query the metrics previously persisted from the specified sensor.
+      operationId: queryWeatherMetrics
+      parameters:
+        - name: id
+          in: query
+          description: ID of the sensor weather metric
+          schema:
+            type: integer
+            format: int64
+        - $ref: '#/components/parameters/q_sensor_id'
+        - $ref: '#/components/parameters/q_temperature'
+        - $ref: '#/components/parameters/q_humidity'
+        - $ref: '#/components/parameters/q_wind_speed'
+        - $ref: '#/components/parameters/q_wind_direction'
+        - $ref: '#/components/parameters/q_cloud_cover'
+        - $ref: '#/components/parameters/q_timestamp'
+        - $ref: '#/components/parameters/q_start'
+        - $ref: '#/components/parameters/q_end'
+      responses:
+        200:
+          description: The list of sensor weather metric records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherMetric'
+        '400':
+          description: Bad Request
+    post:
+      tags:
+        - WeatherMetric
+      summary: Add weather metrics
+      description: The sensor data is added to the application.
+      operationId: importWeatherMetrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WeatherMetric'
+      responses:
+        201:
+          description: Successful creation of an event from a 'Sensor'
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/WeatherMetric'
+        '400':
+          description: Bad Request
+
+components:
+  parameters:
+    q_sensor_name:
+      name: sensor_name
+      in: query
+      description: The name of the Weather Sensor
+      required: false
+      schema:
+        type: string
+    q_sensor_id:
+      name: sensor_id
+      in: query
+      description: The id of the Weather Sensor
+      required: false
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    q_temperature:
+      name: temperature
+      in: query
+      description: The temperature reported by the Weather Sensor
+      required: false
+      schema:
+        type: integer
+        format: int32
+    q_humidity:
+      name: humidity
+      in: query
+      description: The humidity percentage reported by the Weather Sensor
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 100
+    q_wind_speed:
+      name: wind_speed
+      in: query
+      description: The wind speed reported by the Weather Sensor
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+    q_wind_direction:
+      name: wind_direction
+      in: query
+      description: The wind direction reported by the Weather Sensor
+      required: false
+      schema:
+        $ref: '#/components/schemas/WindDirection'
+    q_cloud_cover:
+      name: cloud_cover
+      in: query
+      description: The cloud cover reported by the Weather Sensor
+      required: false
+      schema:
+        $ref: '#/components/schemas/CloudCover'
+    q_timestamp:
+      name: timestamp
+      in: query
+      description: The timestamp for a weather metrics event
+      required: false
+      schema:
+        type: string
+        format: date-time
+    q_start:
+      name: start
+      in: query
+      description: The start date-time a weather metrics event
+      required: false
+      schema:
+        type: string
+        format: date-time
+    q_end:
+      name: end
+      in: query
+      description: The end date-time for a weather metrics event
+      required: false
+      schema:
+        type: string
+        format: date-time
+    q_statistic_type:
+      name: statistic_type
+      in: query
+      description: The type of statistic to gather
+      required: true
+      schema:
+        $ref: '#/components/schemas/WeatherStatisticType'
+
+  schemas:
+    WeatherStatisticType:
+      title: Weather Statistic Type
+      description: An enumeration specifying the types of statistics queries.
+      enum:
+        - MIN
+        - MAX
+        - SUM
+        - AVERAGE
+    WeatherStatistic:
+      description: A representation of an sensor weather metrics from sensors.
+      x-discriminator-value: weather-metric
+      type: object
+      properties:
+        statistic_type:
+          description: The requested statistic type
+          $ref: '#/components/schemas/WeatherStatisticType'
+        temperature:
+          description: The aggregated temperature.
+          type: number
+          format: double
+          #readOnly: true
+        humidity:
+          description: The aggregated humidity.
+          type: number
+          format: double
+          #readOnly: true
+        wind_speed:
+          description: The aggregated wind speed.
+          type: number
+          format: double
+          #readOnly: true
+    CloudCover:
+      title: Cloud Cover
+      description: An enumeration specifying the amount of clouds or sun.
+      enum:
+        - CLEAR
+        - SUNNY
+        - MOSTLY_SUNNY
+        - CLOUDY
+        - MOSTLY_CLOUDY
+        - RAINING
+    ConversionType:
+      title: Conversion Type
+      description: An enumeration specifying the desired conversion type for the data
+      enum:
+        - IMPERIAL
+        - METRIC
+    WindDirection:
+      title: Wind Direction
+      description: An enumeration representing the wind direction.
+      enum:
+        - N
+        - NE
+        - NNE
+        - NW
+        - NNW
+        - S
+        - SE
+        - SSE
+        - SW
+        - SSW
+        - ENE
+        - ESE
+        - W
+        - WNW
+        - WSW
+
+    Entity:
+      description: The base entity representing data in the application
+      required:
+        - object_type
+      type: object
+      properties:
+        object_type:
+          type: string
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: false
+          #readOnly: true
+      discriminator:
+        propertyName: object_type
+        mapping:
+          sensor: '#/components/schemas/Sensor'
+          weather-metric: '#/components/schemas/WeatherMetric'
+    Sensor:
+      description: A representation of an actual sensor that gathers metrics.
+      x-discriminator-value: sensor
+      required:
+        - name
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            name:
+              type: string
+              maxLength: 128
+              nullable: false
+          example:
+            id: 1243
+            name: ACME Sensor
+
+    WeatherMetric:
+      description: A representation of an sensor weather metrics from sensors.
+      x-discriminator-value: weather-metric
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          required:
+            - temperature
+            - humidity
+            - wind_speed
+            - wind_direction
+            - cloud_cover
+          properties:
+            sensor_id:
+              description: The sensor id of the sensor that is send the data
+              type: integer
+              format: int64
+              minimum: 1
+            timestamp:
+              description: The timestamp for the event
+              type: string
+              format: date-time
+            temperature:
+              description: The reported temperature.
+              type: integer
+              format: int32
+            humidity:
+              description: The reported humidity. Specified as a integer that represents the percentage.
+              type: integer
+              format: int32
+              minimum: 0
+              maximum: 100
+            wind_speed:
+              description: The representation of the wind speed.
+              type: integer
+              format: int32
+              minimum: 0
+            wind_direction:
+              $ref: '#/components/schemas/WindDirection'
+            cloud_cover:
+              $ref: '#/components/schemas/CloudCover'
